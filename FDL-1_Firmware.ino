@@ -107,20 +107,6 @@ void loop() {
     }
 }
 
-/***********
-Interrupt triggered state maintenance
-***********/
-
-void setPlungerParked() {
-    plungerParked = digitalRead(plungerParkedPin);
-    delay(1);
-}
-
-void setChamberInPosition() {
-    chamberInPosition = digitalRead(chamberPositionPin);
-    delay(1);
-}
-
 /*undecided if this is how I want to trigger an advance event. Because if it's interrupt driven,
 holding it down won't cause the event to fire each loop. It would be nicer to
 check if the button is held for a number of seconds and make decisions on that. eg.
