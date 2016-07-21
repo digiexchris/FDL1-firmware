@@ -1,8 +1,3 @@
-#ifndef pins_h
-  #define pins_h
-  #include "pins.h"
-#endif
-
 #include "Device.h"
 #include "application.h"
 
@@ -28,12 +23,13 @@ void Device::setup() {
     //outputs
     pinMode(IrLEDPin, OUTPUT);
 
+/**replace this with the Plunger object setup, which will then setup the Stepper, which will then set the pinmode and state
     pinMode(cylinderStepperStepPin, OUTPUT);
     pinMode(plungerStepperStepPin, OUTPUT);
     pinMode(stepperEnablePin, OUTPUT);
     digitalWrite(stepperEnablePin, HIGH); // Turn off steppers (HIGH)
     pinMode(stepperDirPin, OUTPUT);
-    digitalWrite(stepperDirPin, LOW);
+    digitalWrite(stepperDirPin, LOW);*/
     pinMode(modeSwitchPower, OUTPUT);
     digitalWrite(modeSwitchPower, HIGH);
     /*pinMode(escPin, LOW);*/ // I don't think escPin requires initialization since Stepper does it
@@ -48,8 +44,12 @@ void Device::setup() {
     pinMode(advanceButtonPin, INPUT_PULLDOWN);
     pinMode(modeSwitch, INPUT_PULLDOWN);
 
+
+    //TODO move this into the Plunger object, with the other pin detect considerations
     attachInterrupt(plungerParkedPin, [=](){return this->setPlungerParked();}, CHANGE );
     //attachInterrupt(triggerPin, debugPins, CHANGE );*/
+
+    //TODO move this into the Chamber object
     attachInterrupt(chamberPositionPin, [=](){return this->setChamberInPosition();}, CHANGE );
     /*attachInterrupt(modeSwitch, debugPins, CHANGE );*/
 

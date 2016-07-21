@@ -2,11 +2,7 @@ SYSTEM_MODE(MANUAL);
 
 #define DEBUGGING true;
 
-#ifndef pins_h
-  #define pins_h
-  #include "pins.h"
-#endif
-
+#include "pins.h"
 #include "Device.h"
 
 Device device;

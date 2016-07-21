@@ -2,6 +2,7 @@
 #define DEVICE_H
 
 #include "application.h"
+#include "pins.h"
 
 class Device
 {
