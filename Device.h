@@ -1,9 +1,11 @@
-// A2DD.h
 #ifndef DEVICE_H
 #define DEVICE_H
 
+#include "application.h"
+
 class Device
 {
+private:
   //Create some device wide variables
   Servo flywheelESC;  // create servo object to control a ESC
 
@@ -26,8 +28,10 @@ class Device
 
 public:
   Device();
+  void maintainNonInterruptState();
   void setPlungerParked();
   void setChamberInPosition();
+  bool getChamberInPosition();
   void setup();
 };
 
