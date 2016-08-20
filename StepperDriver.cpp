@@ -28,10 +28,14 @@ void StepperDriver::disable() {
     digitalWrite(enablePin,HIGH);
 }
 void StepperDriver::move(int dir, int steps, int stepsPerSecond) {
-    
+
 }
 
-void StepperDriver::setDirection (int dir) {
+void StepperDriver::setDirection (bool dir) {
     direction = dir;
     digitalWrite(dirPin,dir);
+}
+
+bool StepperDriver::getDirection() {
+    return direction;
 }

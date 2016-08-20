@@ -3,8 +3,9 @@
 
 Plunger::Plunger() {
 
-  //initialize plunger state
-  plungerParked = false;
+    stepsPerSecond = 60;
+    //initialize plunger state
+    plungerParked = false;
 }
 
 void Plunger::setup(int stepPin,int dirPin, int enablePin,int parkedPin) {
@@ -15,11 +16,7 @@ void Plunger::setup(int stepPin,int dirPin, int enablePin,int parkedPin) {
 
     //inputs
     pinMode(parkedPin, INPUT_PULLDOWN);
-
-
-    //attachInterrupt(parkedPin, [=](){return this->setPlungerParked();}, CHANGE );
     attachInterrupt(parkedPin, [=](){return this->setPlungerParked();}, CHANGE );
-
     plungerParked = digitalRead(parkedPin);
 }
 
