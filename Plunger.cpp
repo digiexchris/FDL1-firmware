@@ -29,7 +29,8 @@ void Plunger::setup(int stepPin,int dirPin, int enablePin,int parkedPin, int ste
 If any movements are called for, and plungerParked is still false, the calling method can call park() to resolve it.
 It will move a little bit in one way, and then move a little the other way. It'll repeat with bigger movement distances
 until the park interrupt triggers and sets the plungerparked state.
-If park() is called but plungerParked is true already, nothing will happen*/
+If park() is called but plungerParked is true already, nothing will happen
+NOTE: this method blocks until it's complete!*/
 
 void Plunger::park() {
 
