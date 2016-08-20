@@ -7,6 +7,7 @@ Device::Device() {
   dartInChamber = false;
   chamberInPosition = false;
   advancingCylinder = false;
+  stepsPerRotation = 6400;
 
   //need to know if it's firing so that we can keep the cylinder from advancing or doing anything else
   //other than completing a firing cycle
@@ -15,7 +16,7 @@ Device::Device() {
 
 void Device::setup() {
     flywheelESC.attach(escPin);  // attaches pin to servo object
-    plunger.setup(plungerStepperStepPin,stepperDirPin,stepperEnablePin,plungerParkedPin);
+    plunger.setup(plungerStepperStepPin,stepperDirPin,stepperEnablePin,plungerParkedPin,stepsPerRotation);
     // Initialize pins
     // It's important you do this here, inside the setup() function rather than in the loop function.
 
@@ -84,14 +85,14 @@ bool Device::isReadyToFire() {
     }
 }
 
+void Device::park() {
+    plunger.park();
+    // cylinder.park();
+}
+
 /***********
 Interrupt triggered state maintenance
 ***********/
-
-void Device::setPlungerParked() {
-    plungerParked = digitalRead(plungerParkedPin);
-    delay(1);
-}
 
 void Device::setChamberInPosition() {
     chamberInPosition = digitalRead(chamberPositionPin);

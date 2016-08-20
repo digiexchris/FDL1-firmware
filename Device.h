@@ -11,6 +11,7 @@ private:
   //Create some device wide variables
   Servo flywheelESC;  // create servo object to control a ESC
   Plunger plunger;
+
   /*double speedValue = 0.0;
   unsigned long disableMillis = millis();
   int stepperWarmup = 80;
@@ -22,6 +23,7 @@ private:
   bool chamberInPosition;
   bool plungerParked;
   bool advancingCylinder;
+  int stepsPerRotation;
 
   //need to know if it's firing so that we can keep the cylinder from advancing or doing anything else
   //other than completing a firing cycle
@@ -34,6 +36,7 @@ public:
   void setPlungerParked();
   void setChamberInPosition();
   bool isReadyToFire();
+  void park();
   void setup();
 };
 

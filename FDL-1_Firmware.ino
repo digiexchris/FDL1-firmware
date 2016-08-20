@@ -32,12 +32,15 @@ void loop() {
         Particle.process();
     }
 
-    //read dart in chamber pin when decisions need to be made
+    //update the LED that shows if there's a dart in the chamber, if the chamber is on the pin, and the plunger is parked
     device.isReadyToFire();
-    //debug("Pin",(int) device.isReadyToFire());
-    delay(50);
+    delay(10);
 
     if(digitalRead(triggerPin)) {
+        Serial.println("Parking");
+        device.park();
+
+        Serial.println("Parking done");
         /* considerations:
         -you need to delay pushing the plunger in until the flywheels are up to speed
         -flywheels take a different time to get to max speed depending on how fast the max speed is

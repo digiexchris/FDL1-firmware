@@ -25,10 +25,19 @@ void StepperDriver::enable() {
 
 void StepperDriver::disable() {
     enabled = false;
-    digitalWrite(enablePin,HIGH);
+    digitalWrite(enablePin, HIGH);
 }
-void StepperDriver::move(int dir, int steps, int stepsPerSecond) {
+void StepperDriver::move(bool dir, int steps, int stepsPerSecond) {
+    unsigned long millisecondsPerStep = (1/(float)stepsPerSecond)*1000;
 
+    setDirection(dir);
+
+    for(int i=0;i<steps;i++) {
+        digitalWrite(stepPin,HIGH);
+        delay(1);
+        digitalWrite(stepPin,LOW);
+        delay(millisecondsPerStep);
+    }
 }
 
 void StepperDriver::setDirection (bool dir) {

@@ -11,6 +11,9 @@ private:
   //plunger state
   bool plungerParked;
   int parkedPin;
+  int stepsPerSecond;
+  int stepsPerRotation;
+  int parkingStepIncrement;
 
 public:
   Plunger();
@@ -19,7 +22,7 @@ public:
   void park();
   void fire();
   void setPlungerParked();
-  void setup(int stepPin, int dirPin, int enablePin, int parkedPin);
+  void setup(int stepPin, int dirPin, int enablePin, int parkedPin, int stepsPerRotation);
 };
 
 #endif

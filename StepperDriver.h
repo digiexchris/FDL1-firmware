@@ -20,6 +20,7 @@ public:
   void enable();
   void disable();
   void setDirection( bool dir );
+  bool getDirection();
   void move(bool dir, int steps, int stepsPerSecond);
   bool step(int steps, int stepsPerSecond);
 };
