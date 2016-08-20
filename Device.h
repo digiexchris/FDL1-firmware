@@ -3,13 +3,14 @@
 
 #include "application.h"
 #include "pins.h"
+#include "Plunger.h"
 
 class Device
 {
 private:
   //Create some device wide variables
   Servo flywheelESC;  // create servo object to control a ESC
-
+  Plunger plunger;
   /*double speedValue = 0.0;
   unsigned long disableMillis = millis();
   int stepperWarmup = 80;
@@ -32,7 +33,7 @@ public:
   void maintainNonInterruptState();
   void setPlungerParked();
   void setChamberInPosition();
-  bool getChamberInPosition();
+  bool isReadyToFire();
   void setup();
 };
 

@@ -6,26 +6,26 @@ Device::Device() {
   //initialize device state
   dartInChamber = false;
   chamberInPosition = false;
-  plungerParked = false;
   advancingCylinder = false;
 
   //need to know if it's firing so that we can keep the cylinder from advancing or doing anything else
   //other than completing a firing cycle
-  bool firing = false;
+  firing = false;
 }
 
 void Device::setup() {
     flywheelESC.attach(escPin);  // attaches pin to servo object
-
+    plunger.setup(plungerStepperStepPin,stepperDirPin,stepperEnablePin,plungerParkedPin);
     // Initialize pins
     // It's important you do this here, inside the setup() function rather than in the loop function.
 
     //outputs
     pinMode(IrLEDPin, OUTPUT);
+    pinMode(readyToFireLED, OUTPUT);
+    digitalWrite(readyToFireLED,LOW);
 
-/**replace this with the Plunger object setup, which will then setup the Stepper, which will then set the pinmode and state
+/**replace this with the Cylinder object setup, which will then setup the Stepper, which will then set the pinmode and state
     pinMode(cylinderStepperStepPin, OUTPUT);
-    pinMode(plungerStepperStepPin, OUTPUT);
     pinMode(stepperEnablePin, OUTPUT);
     digitalWrite(stepperEnablePin, HIGH); // Turn off steppers (HIGH)
     pinMode(stepperDirPin, OUTPUT);
@@ -36,7 +36,6 @@ void Device::setup() {
 
     //inputs
     pinMode(chamberPositionPin, INPUT_PULLDOWN);
-    pinMode(plungerParkedPin, INPUT_PULLDOWN);
     pinMode(triggerPin, INPUT_PULLDOWN);
     pinMode(dartInChamberSensorPin, INPUT_PULLDOWN);
     pinMode(wifiEnablePin, INPUT_PULLDOWN);
@@ -44,9 +43,6 @@ void Device::setup() {
     pinMode(advanceButtonPin, INPUT_PULLDOWN);
     pinMode(modeSwitch, INPUT_PULLDOWN);
 
-
-    //TODO move this into the Plunger object, with the other pin detect considerations
-    attachInterrupt(plungerParkedPin, [=](){return this->setPlungerParked();}, CHANGE );
     //attachInterrupt(triggerPin, debugPins, CHANGE );*/
 
     //TODO move this into the Chamber object
@@ -73,8 +69,19 @@ void Device::setup() {
     plungerParked = digitalRead(plungerParkedPin);
 }
 
-bool Device::getChamberInPosition() {
-    return (bool) chamberInPosition;
+bool Device::isReadyToFire() {
+    if(chamberInPosition
+        && dartInChamber
+        && plunger.isParked()) {
+        digitalWrite(readyToFireLED,HIGH);
+        delay(50);
+        return true;
+    }
+    else {
+        digitalWrite(readyToFireLED,LOW);
+        delay(50);
+        return false;
+    }
 }
 
 /***********

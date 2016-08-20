@@ -20,7 +20,6 @@ void setup() {
         Particle.connect();
     }
 
-
 }
 
 //the main loop
@@ -34,8 +33,8 @@ void loop() {
     }
 
     //read dart in chamber pin when decisions need to be made
-
-    debug("Pin",(int) device.getChamberInPosition());
+    device.isReadyToFire();
+    //debug("Pin",(int) device.isReadyToFire());
     delay(50);
 
     if(digitalRead(triggerPin)) {

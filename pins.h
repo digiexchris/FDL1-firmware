@@ -26,4 +26,5 @@
   #define stepperDirPin D7 //direction pin for both drivers
   #define escPin TX //esc signal pin (servo spec)
   #define modeSwitchPower WKP //supply the mode switch with power
+  #define readyToFireLED D7
 #endif
