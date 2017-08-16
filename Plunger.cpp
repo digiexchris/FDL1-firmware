@@ -24,40 +24,50 @@ void Plunger::setup(int stepPin,int dirPin, int enablePin,int parkedPin, int ste
 }
 
 
-/*park() will attempt to resolve a partially deployed plunger (like if someone sticks their finger in the slot in the back).
+/*park() will attempt to resolve a partially deployed plunger (like if someone sticks their finger in the slot in the back or a jam has occurred).
 
 If any movements are called for, and plungerParked is still false, the calling method can call park() to resolve it.
-It will move a little bit in one way, and then move a little the other way. It'll repeat with bigger movement distances
-until the park interrupt triggers and sets the plungerparked state.
+It will move one rotation in one direction, and then move one rotation the other way.
 If park() is called but plungerParked is true already, nothing will happen
 NOTE: this method blocks until it's complete!*/
 
 void Plunger::park() {
 
+    //if it's already parked don't do anything
+    if(plungerParked) {
+        return;
+    }
+
+    //try first in one direction
+    if(Plunger::parkingMove(1)) {
+        return;
+    }
+
+    //then try in the other direction
+    if(Plunger::parkingMove(0)) {
+        return;
+    }
+}
+
+bool Plunger::parkingMove(int dir) {
+    int stepsRotated = 0;
+    int stepIncreaseSize = 10;
+
     stepper.enable();
 
-    int stepsToRotate = 10;
-
     do {
-        //don't do anything if it's already parked
-        if(plungerParked) { return; }
+        stepsRotated += stepIncreaseSize;
 
         //try to find the switch in one direction
-        stepper.move(1,stepsToRotate,stepsPerSecond);
-        if(plungerParked) { return; }
+        stepper.move(1,stepsRotated,stepsPerSecond);
+        if(plungerParked) {
+            return true;
+        }
 
-        //reverse it and try to find the switch in the other direction
-        stepper.move(0,stepsToRotate*2,stepsPerSecond);
-        if(plungerParked) { return; }
-
-        //didn't find it, so go back to the starting point and try again
-        stepper.move(1,stepsToRotate,stepsPerSecond);
-        if(plungerParked) { return; }
-
-        stepsToRotate = stepsToRotate + parkingStepIncrement;
-    } while(stepsToRotate <= stepsPerRotation);
+    } while(stepsRotated <= stepsPerRotation);
 
     stepper.disable();
+    return false;
 }
 
 bool Plunger::isParked() {
@@ -77,5 +87,4 @@ Interrupt triggered state maintenance
 ***********/
 void Plunger::setPlungerParked() {
     plungerParked = digitalRead(parkedPin);
-    delay(1);
 }

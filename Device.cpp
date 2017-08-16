@@ -115,6 +115,4 @@ void Device::maintainNonInterruptState()
     /*chamberInPosition = digitalRead(chamberPositionPin);*/
 
     dartInChamber = digitalRead(dartInChamberSensorPin);
-    //let the readings stabilize (though since the main loop takes longer than this, it's maybe unecessary)
-    delay(1);
 }

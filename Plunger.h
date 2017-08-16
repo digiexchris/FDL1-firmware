@@ -20,6 +20,7 @@ public:
 
   bool isParked();
   void park();
+  bool parkingMove(int direction);
   void fire();
   void setPlungerParked();
   void setup(int stepPin, int dirPin, int enablePin, int parkedPin, int stepsPerRotation);
