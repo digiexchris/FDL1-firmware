@@ -96,7 +96,6 @@ Interrupt triggered state maintenance
 
 void Device::setChamberInPosition() {
     chamberInPosition = digitalRead(chamberPositionPin);
-    delay(1);
 }
 
 /************
