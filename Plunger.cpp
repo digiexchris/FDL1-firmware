@@ -3,9 +3,9 @@
 
 Plunger::Plunger() {
 
-    stepsPerSecond = 20000;
+    stepsPerSecond = 1300;
     //we'll increment the distance each rotation will go by this number of steps while parking
-    parkingStepIncrement = 10;
+    parkingStepIncrement = 20;
     //initialize plunger state
     plungerParked = false;
 }
@@ -45,27 +45,27 @@ void Plunger::park() {
 
     do {
         //try to find the switch in one direction
-        stepper.move(1,stepsToRotate,stepsPerSecond);
+        stepper.move(1,stepsToRotate,this->stepsPerSecond);
         if(plungerParked) {
             stepper.disable();
             return;
         }
 
         //reverse it and try to find the switch in the other direction
-        stepper.move(0,stepsToRotate*2,stepsPerSecond);
+        stepper.move(0,stepsToRotate*2,this->stepsPerSecond);
         if(plungerParked) {
             stepper.disable();
             return;
         }
 
         //didn't find it, so go back to the starting point and try again
-        stepper.move(1,stepsToRotate,stepsPerSecond);
+        stepper.move(1,stepsToRotate,this->stepsPerSecond);
         if(plungerParked) {
             stepper.disable();
             return;
         }
 
-        stepsToRotate = stepsToRotate + parkingStepIncrement;
+        stepsToRotate = stepsToRotate + this->parkingStepIncrement;
     } while(stepsToRotate <= stepsPerRotation);
 
     stepper.disable();
