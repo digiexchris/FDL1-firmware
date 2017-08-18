@@ -31,6 +31,9 @@ void Device::setup() {
     digitalWrite(stepperEnablePin, HIGH); // Turn off steppers (HIGH)
     pinMode(stepperDirPin, OUTPUT);
     digitalWrite(stepperDirPin, LOW);*/
+
+    //voltage source for the mode switch. Probably should take this from the power rail instead and free
+    //up a pin
     pinMode(modeSwitchPower, OUTPUT);
     digitalWrite(modeSwitchPower, HIGH);
     /*pinMode(escPin, LOW);*/ // I don't think escPin requires initialization since Stepper does it

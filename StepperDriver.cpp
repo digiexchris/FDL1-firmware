@@ -1,5 +1,13 @@
 #include "StepperDriver.h"
 
+/**
+Very simple stepper controller class. It's not using the normal time tracking based
+delay that many robot controllers use for controlling multiple axes at the same time
+because of the design of the blaster. Only one axis can be moving at a time due
+to mechanical constraints, so using delay() and delayMicroseconds() between step
+pulses works fine.
+*/
+
 StepperDriver::StepperDriver() {
 
 }
@@ -21,13 +29,11 @@ void StepperDriver::setup(int stepPin, int dirPin, int enablePin) {
 void StepperDriver::enable() {
     enabled = true;
     digitalWrite(enablePin,LOW);
-    delayMicroseconds(2);
 }
 
 void StepperDriver::disable() {
     enabled = false;
     digitalWrite(enablePin, HIGH);
-    delayMicroseconds(2);
 }
 void StepperDriver::move(bool dir, int steps, int stepsPerSecond = 1000) {
     unsigned long microSecondsPerStep = (1/(float)stepsPerSecond)*1000000;

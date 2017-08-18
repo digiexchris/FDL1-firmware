@@ -5,6 +5,8 @@ SYSTEM_MODE(MANUAL);
 #include "pins.h"
 #include "Device.h"
 
+bool firstRun = true;
+
 Device device;
 
 void setup() {
@@ -34,13 +36,13 @@ void loop() {
 
     //update the LED that shows if there's a dart in the chamber, if the chamber is on the pin, and the plunger is parked
     device.isReadyToFire();
-    delay(10);
 
-    if(digitalRead(triggerPin)) {
+    if(firstRun) {
         Serial.println("Parking");
         device.park();
 
         Serial.println("Parking done");
+        firstRun = false;
         /* considerations:
         -you need to delay pushing the plunger in until the flywheels are up to speed
         -flywheels take a different time to get to max speed depending on how fast the max speed is
