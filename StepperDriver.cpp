@@ -21,14 +21,16 @@ void StepperDriver::setup(int stepPin, int dirPin, int enablePin) {
 void StepperDriver::enable() {
     enabled = true;
     digitalWrite(enablePin,LOW);
+    delayMicroseconds(2);
 }
 
 void StepperDriver::disable() {
     enabled = false;
     digitalWrite(enablePin, HIGH);
+    delayMicroseconds(2);
 }
 void StepperDriver::move(bool dir, int steps, int stepsPerSecond = 1000) {
-    unsigned long millisecondsPerStep = (1/(float)stepsPerSecond)*1000;
+    unsigned long microSecondsPerStep = (1/(float)stepsPerSecond)*1000000;
 
     setDirection(dir);
 
@@ -36,13 +38,14 @@ void StepperDriver::move(bool dir, int steps, int stepsPerSecond = 1000) {
         digitalWrite(stepPin,HIGH);
         delayMicroseconds(2);
         digitalWrite(stepPin,LOW);
-        delay(millisecondsPerStep);
+        delayMicroseconds(microSecondsPerStep);
     }
 }
 
 void StepperDriver::setDirection (bool dir) {
     direction = dir;
     digitalWrite(dirPin,dir);
+    delayMicroseconds(1);
 }
 
 bool StepperDriver::getDirection() {

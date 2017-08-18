@@ -3,9 +3,10 @@
 
 Plunger::Plunger() {
 
-    stepsPerSecond = 1300;
+    //plunger speed in 1.8 degree microsteps per second
+    stepsPerSecond = 6250;
     //we'll increment the distance each rotation will go by this number of steps while parking
-    parkingStepIncrement = 20;
+    parkingStepIncrement = 32;
     //initialize plunger state
     plungerParked = false;
 }
