@@ -1,26 +1,29 @@
-#ifndef PLUNGER_H
-#define PLUNGER_H
+#ifndef CHAMBER_H
+#define CHAMBER_H
 
 #include "application.h"
 #include "StepperDriver.h"
 
-class Plunger
+class Cylinder
 {
 private:
   StepperDriver stepper;  // create servo object to control a stepper
   //plunger state
-  volatile bool plungerParked;
+  volatile bool cylinderParked;
   int parkedPin;
   int stepsPerSecond;
   int stepsPerRotation;
   int parkingStepIncrement;
+  int cylinderCount;
+  int stepsPerChamber;
+  int maxParkingSteps;
 
   bool parkingMove(int direction);
-  void setPlungerParked();
+  void setCylinderParked();
 
 
 public:
-  Plunger();
+  Cylinder();
   bool isParked();
   void park();
   void fire();

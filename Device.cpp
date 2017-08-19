@@ -5,8 +5,6 @@ Device::Device() {
 
   //initialize device state
   dartInChamber = false;
-  chamberInPosition = false;
-  advancingCylinder = false;
   stepsPerRotation = 6400;
 
   //need to know if it's firing so that we can keep the cylinder from advancing or doing anything else
@@ -17,6 +15,7 @@ Device::Device() {
 void Device::setup() {
     flywheelESC.attach(escPin);  // attaches pin to servo object
     plunger.setup(plungerStepperStepPin,stepperDirPin,stepperEnablePin,plungerParkedPin,stepsPerRotation);
+    chamber.setup(cylinderStepperStepPin,stepperDirPin,stepperEnablePin,cylinderPositionPin,stepsPerRotation);
     // Initialize pins
     // It's important you do this here, inside the setup() function rather than in the loop function.
 
@@ -49,8 +48,6 @@ void Device::setup() {
 
     //attachInterrupt(triggerPin, debugPins, CHANGE );*/
 
-    //TODO move this into the Chamber object
-    attachInterrupt(chamberPositionPin, [=](){return this->setChamberInPosition();}, CHANGE );
     /*attachInterrupt(modeSwitch, debugPins, CHANGE );*/
 
     //initialize the esc. Give it full throttle with the trigger held down when the power is turned on, then minimum throttle.
@@ -68,14 +65,13 @@ void Device::setup() {
 
     //Start PWM on the IR LED
     analogWrite(IrLEDPin,250,38000);
-    //determine the initial alignment of the starting chamber, plunger, etc
-    chamberInPosition = digitalRead(chamberPositionPin);
 }
 
 bool Device::isReadyToFire() {
     if(chamberInPosition
         && dartInChamber
-        && plunger.isParked()) {
+        && plunger.isParked()
+        && cylinder.isParked()) {
         digitalWrite(readyToFireLED,HIGH);
         delay(50);
         return true;
@@ -89,16 +85,13 @@ bool Device::isReadyToFire() {
 
 void Device::park() {
     plunger.park();
-    // cylinder.park();
+    cylinder.park();
 }
 
 /***********
 Interrupt triggered state maintenance
 ***********/
 
-void Device::setChamberInPosition() {
-    chamberInPosition = digitalRead(chamberPositionPin);
-}
 
 /************
 Change the device state to reflect the pins that can not (or should not) be interrupt driven
@@ -113,7 +106,6 @@ void Device::maintainNonInterruptState()
 {
 
     //D0 can't use interrupts since it's already used by the Photon's built in mode switch
-    /*chamberInPosition = digitalRead(chamberPositionPin);*/
 
     dartInChamber = digitalRead(dartInChamberSensorPin);
 }

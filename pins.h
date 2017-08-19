@@ -8,7 +8,7 @@
 #define PINS_DEF
   //input
   //interrupt attached pins
-  #define chamberPositionPin A4 // green //chamber position microswitch under the main body
+  #define cylinderPositionPin A4 // green //chamber position microswitch under the main body
   #define plungerParkedPin DAC // blue  //microswitch in the rear that is hit when the plunger is all the way
 
   #define triggerPin A3  //TX;
