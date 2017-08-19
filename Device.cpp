@@ -7,6 +7,8 @@ Device::Device() {
   dartInChamber = false;
   stepsPerRotation = 6400;
 
+  advanceButtonStateChangeTime = 0;
+
   //need to know if it's firing so that we can keep the cylinder from advancing or doing anything else
   //other than completing a firing cycle
   firing = false;
@@ -24,18 +26,10 @@ void Device::setup() {
     pinMode(readyToFireLED, OUTPUT);
     digitalWrite(readyToFireLED,LOW);
 
-/**replace this with the Cylinder object setup, which will then setup the Stepper, which will then set the pinmode and state
-    pinMode(cylinderStepperStepPin, OUTPUT);
-    pinMode(stepperEnablePin, OUTPUT);
-    digitalWrite(stepperEnablePin, HIGH); // Turn off steppers (HIGH)
-    pinMode(stepperDirPin, OUTPUT);
-    digitalWrite(stepperDirPin, LOW);*/
-
     //voltage source for the mode switch. Probably should take this from the power rail instead and free
     //up a pin
     pinMode(modeSwitchPower, OUTPUT);
     digitalWrite(modeSwitchPower, HIGH);
-    /*pinMode(escPin, LOW);*/ // I don't think escPin requires initialization since Stepper does it
 
     //inputs
     pinMode(chamberPositionPin, INPUT_PULLDOWN);
@@ -56,15 +50,39 @@ void Device::setup() {
 
     while(digitalRead(triggerPin) == HIGH){
         flywheelESC.write(180);
+        delay(500);
+        flywheelESC.write(0);
+        delay(10);
     }
-
-    flywheelESC.write(0);
-    delay(500);
-
-
 
     //Start PWM on the IR LED
     analogWrite(IrLEDPin,250,38000);
+    delay(10);
+}
+
+//run one tick, the main device logic
+void Device::pulse() {
+    maintainNonInterruptState();
+
+    //if the advance button was triggered in the last 450ms for less than 350ms, advance one chamber
+    int currentTime = millis();
+    if(advanceButton == 0 && advanceButtonOffTime - advanceButtonOnTime < 350 && advanceButtonOffTime - currentTime < 400ms) {
+        advanceOneChamber()
+
+        //let the loop have an opportunity to detect the next state as fast as possible
+        return;
+    }
+
+    //if the advance button was released in the last 400ms for greater than 350ms, advance to the next dart
+    if(advanceButton == 0 && advanceButtonOffTime - advanceButtonOnTime > 350 && advanceButtonOffTime - currentTime < 400ms) {
+
+        if(dartInChamber) {
+            return;
+        } else {
+            advanceOneChamber()
+            return;
+        }
+    }
 }
 
 bool Device::isReadyToFire() {
@@ -81,6 +99,14 @@ bool Device::isReadyToFire() {
         delay(50);
         return false;
     }
+}
+
+void Device::advanceOneChamber() {
+    Cylinder.advanceOneChamber();
+}
+
+void Device::advanceToDart() {
+
 }
 
 void Device::park() {
@@ -106,6 +132,16 @@ void Device::maintainNonInterruptState()
 {
 
     //D0 can't use interrupts since it's already used by the Photon's built in mode switch
+    //maintain advance button sate
+    previousAdvanceButton = advanceButton;
+    advanceButton = digitalRead(advanceButtonPin);
+    if(previousAdvanceButton != advanceButton && advanceButton == 1) {
+        advanceButtonOnTime = millis();
+    }
+    if(previousAdvanceButton != advanceButton && advanceButton == 0) {
+        advanceButtonOffTime = millis();
+    }
+    //end maintaining advance button state
 
     dartInChamber = digitalRead(dartInChamberSensorPin);
 }
