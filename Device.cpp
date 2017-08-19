@@ -62,7 +62,43 @@ void Device::setup() {
 
 //run one tick, the main device logic
 void Device::pulse() {
+
+    /* since there's limited interupt pin availability I'm sacrificing some state change detection capability.
+    In some cases if the machine is busy doing something else we'll miss that a button was pressed. Considering
+    this blaster is only really cabable of doing one thing at a time, this isn't a big deal. eg. if someone toggles
+    the advance button wile a firing cycle is in progress the state change will be missed, but we don't want
+    a cylinder advance to happen while a firing cycle is in progress anyway. Not only is this expected behavior, but
+    it's preferred so that we don't have to maintain an event queue for things we don't care about. */
     maintainNonInterruptState();
+
+    //firing where the device is in a fireable state takes priority over all else so it's at the top of the list
+    if(triggerButton) {
+
+        int currentTime = millis();
+        //TODO make a dart jam detector with the pin freed up by the potentiometer
+        //TODO for now, if it wasn't parked when we got here, flip a toggle and don't fire. Unflip that toggle when the mode switch is hit. Turn mode into a reset.
+        //TODO turn on esc
+
+        //make sure they're in position. If they are these will take no action.
+        Plunnger.park();
+        Cylinder.park();
+
+        //if parking took some time we might already be up to speed.
+        if(millis() - currentTime < getSpoolUpTime()) {
+            delay(millis() - currentTime);
+        }
+
+        if(dartInChamber) {
+            fire();
+        } else {
+            if(advanceToDart()) {
+                fire();
+            }
+        }
+
+        //since this is returning from pulse() and the triggerButton check is first, if we keep holding down the trigger button it will keep firing.
+        return;
+    }
 
     //if the advance button was triggered in the last 450ms for less than 350ms, advance one chamber
     int currentTime = millis();
@@ -105,8 +141,10 @@ void Device::advanceOneChamber() {
     Cylinder.advanceOneChamber();
 }
 
-void Device::advanceToDart() {
+bool Device::advanceToDart() {
+    //TODO you can only advance two rotations to find a dart, any more than that, and abort the sequence
 
+    //return true to fire or false on error.
 }
 
 void Device::park() {
