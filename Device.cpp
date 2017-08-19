@@ -70,7 +70,6 @@ void Device::setup() {
     analogWrite(IrLEDPin,250,38000);
     //determine the initial alignment of the starting chamber, plunger, etc
     chamberInPosition = digitalRead(chamberPositionPin);
-    plungerParked = digitalRead(plungerParkedPin);
 }
 
 bool Device::isReadyToFire() {

@@ -20,8 +20,7 @@ private:
 
   //device state
   bool dartInChamber;
-  bool chamberInPosition;
-  bool plungerParked;
+  volatile bool chamberInPosition;
   bool advancingCylinder;
   int stepsPerRotation;
 

@@ -9,7 +9,7 @@ class Plunger
 private:
   StepperDriver stepper;  // create servo object to control a stepper
   //plunger state
-  bool plungerParked;
+  volatile bool plungerParked;
   int parkedPin;
   int stepsPerSecond;
   int stepsPerRotation;
