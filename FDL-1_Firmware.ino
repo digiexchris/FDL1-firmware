@@ -36,7 +36,7 @@ void loop() {
 
     //doing actual things and not just doing pin setup, so we can't do this in a function called by the photon's setup() function
     if(firstRun) {
-        firstRun();
+        firstRunSetup();
         //restrat the loop to let other fun things happen with this code disabled
         return;
     }
@@ -95,7 +95,7 @@ void connect() {
   }
 }
 
-void firstRun() {
+void firstRunSetup() {
     Serial.println("Parking");
     device.park();
 

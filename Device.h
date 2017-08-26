@@ -4,6 +4,7 @@
 #include "application.h"
 #include "pins.h"
 #include "Plunger.h"
+#include "Cylinder.h"
 
 class Device
 {
@@ -11,7 +12,13 @@ private:
   //Create some device wide variables
   Servo flywheelESC;  // create servo object to control a ESC
   Plunger plunger;
-  Chamber chamber;
+  Cylinder cylinder;
+
+  //time since the flywheels started spinning up
+  int spinupTime;
+
+  //guess what this is for
+  int triggerButton;
 
   /*double speedValue = 0.0;
   unsigned long disableMillis = millis();
@@ -32,10 +39,13 @@ private:
   int advanceButtonOnTime;
   int advanceButtonOffTime;
 
-  //need to know if it's firing so that we can keep the cylinder from advancing or doing anything else
-  //other than completing a firing cycle
-  bool firing;
+  //advance button state
+  int advanceButton;
 
+  int getPowerLevel();
+  int getSpoolUpTime();
+  void advanceOneChamber();
+  bool advanceToDart();
 
 public:
   Device();
@@ -43,8 +53,7 @@ public:
   bool isReadyToFire();
   void park();
   void setup();
-  void advanceOneChamber();
-  void advanceToDart();
+
 
   //run one tick
   void pulse();

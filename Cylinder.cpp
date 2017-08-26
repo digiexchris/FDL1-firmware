@@ -1,10 +1,10 @@
 #include "Cylinder.h"
 #include "application.h"
 
-Cylinder::Chamber() {
+Cylinder::Cylinder() {
 
-    //plunger speed in microsteps per second
-    stepsPerSecond = 6250;
+    //cylinder speed in microsteps per second
+    stepsPerSecond = 2000;//6250;
 
     //we'll increment the distance each rotation will go by this number of steps while parking
     parkingStepIncrement = 32;
@@ -18,11 +18,11 @@ Cylinder::Chamber() {
     // We'll lose a step every once in a while so to keep it accurate we'll move
 
     // todo - decide if you want to go move until the switch is hit instead of
-    stepsPerChamber = (int) stepsPerRotation / 12
+    stepsPerChamber = (int) stepsPerRotation / 12;
 
     //if we haven't found a parking spot and we've tried what should have been 3 chambers, bail
-    maxChamberPositions = 3
-    maxParkingSteps = maxChamberPositions * stepsPerChamber
+    maxChamberPositions = 3;
+    maxParkingSteps = maxChamberPositions * stepsPerChamber;
 }
 
 void Cylinder::setup(int stepPin,int dirPin, int enablePin,int parkedPin, int stepsPerRotation = 6400) {
@@ -34,7 +34,7 @@ void Cylinder::setup(int stepPin,int dirPin, int enablePin,int parkedPin, int st
 
     //inputs
     pinMode(parkedPin, INPUT_PULLDOWN);
-    attachInterrupt(parkedPin, [=](){return this->setChamberParked();}, CHANGE );
+    attachInterrupt(parkedPin, [=](){return this->setCylinderParked();}, CHANGE );
     cylinderParked = digitalRead(parkedPin);
 }
 
@@ -86,7 +86,7 @@ void Cylinder::advanceOneChamber() {
 
     //get most of the way to the next chamber
     stepper.move(1, (int) stepsPerChamber*0.8, stepsPerSecond);
-    stepsToRotate = 16;
+    int stepsToRotate = 16;
 
     //start checking while spinning the last few steps to the switch
     do{

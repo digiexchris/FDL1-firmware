@@ -17,6 +17,7 @@ private:
   int cylinderCount;
   int stepsPerChamber;
   int maxParkingSteps;
+  int maxChamberPositions;
 
   bool parkingMove(int direction);
   void setCylinderParked();
@@ -24,6 +25,7 @@ private:
 
 public:
   Cylinder();
+  void advanceOneChamber();
   bool isParked();
   void park();
   void fire();

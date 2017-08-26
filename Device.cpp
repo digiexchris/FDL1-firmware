@@ -7,17 +7,20 @@ Device::Device() {
   dartInChamber = false;
   stepsPerRotation = 6400;
 
-  advanceButtonStateChangeTime = 0;
+  advanceButton = 0;
+  advanceButtonOffTime = 0;
+  advanceButtonOnTime = 0;
 
-  //need to know if it's firing so that we can keep the cylinder from advancing or doing anything else
-  //other than completing a firing cycle
-  firing = false;
+  //is the trigger held down or not
+  triggerButton = 0;
+
+  spinupTime = 0;
 }
 
 void Device::setup() {
     flywheelESC.attach(escPin);  // attaches pin to servo object
     plunger.setup(plungerStepperStepPin,stepperDirPin,stepperEnablePin,plungerParkedPin,stepsPerRotation);
-    chamber.setup(cylinderStepperStepPin,stepperDirPin,stepperEnablePin,cylinderPositionPin,stepsPerRotation);
+    cylinder.setup(cylinderStepperStepPin,stepperDirPin,stepperEnablePin,chamberPositionPin,stepsPerRotation);
     // Initialize pins
     // It's important you do this here, inside the setup() function rather than in the loop function.
 
@@ -33,10 +36,14 @@ void Device::setup() {
 
     //inputs
     pinMode(chamberPositionPin, INPUT_PULLDOWN);
+
+    //we'll need the trigger button state before setup is done to determine power mode and setup the ESCs
     pinMode(triggerPin, INPUT_PULLDOWN);
+    triggerButton = digitalRead(triggerPin);
+
     pinMode(dartInChamberSensorPin, INPUT_PULLDOWN);
     pinMode(wifiEnablePin, INPUT_PULLDOWN);
-    pinMode(speedPotPin, INPUT);
+    //pinMode(speedPotPin, INPUT);
     pinMode(advanceButtonPin, INPUT_PULLDOWN);
     pinMode(modeSwitch, INPUT_PULLDOWN);
 
@@ -48,7 +55,7 @@ void Device::setup() {
     //if it's turned on with the trigger not held down, just give it minimum throttle to enable the esc.
     //this is in case the esc does not give the motors full rpm. In RC terms, this is calibrating the end stops of the throttle and should only be needed once.
 
-    while(digitalRead(triggerPin) == HIGH){
+    while(triggerButton == HIGH){
         flywheelESC.write(180);
         delay(500);
         flywheelESC.write(0);
@@ -72,27 +79,32 @@ void Device::pulse() {
     maintainNonInterruptState();
 
     //firing where the device is in a fireable state takes priority over all else so it's at the top of the list
-    if(triggerButton) {
+    /*if(triggerButton) {
 
-        int currentTime = millis();
+
         //TODO make a dart jam detector with the pin freed up by the potentiometer
         //TODO for now, if it wasn't parked when we got here, flip a toggle and don't fire. Unflip that toggle when the mode switch is hit. Turn mode into a reset.
         //TODO turn on esc
 
+        int startFlywheelTime = millis();
+
         //make sure they're in position. If they are these will take no action.
-        Plunnger.park();
-        Cylinder.park();
+        plunger.park();
+        cylinder.park();
+
+        spinupTime = millis() - startFlywheelTime;
 
         //if parking took some time we might already be up to speed.
-        if(millis() - currentTime < getSpoolUpTime()) {
-            delay(millis() - currentTime);
+        if(spinupTime < getSpoolUpTime()) {
+            delay(getSpoolUpTime() - spinupTime);
+            spinupTime = millis() - startFlywheelTime;
         }
 
         if(dartInChamber) {
-            fire();
+            //fire();
         } else {
             if(advanceToDart()) {
-                fire();
+                //fire();
             }
         }
 
@@ -100,25 +112,34 @@ void Device::pulse() {
         return;
     }
 
+    if(!triggerButton) {
+        //start spinning down the flywheel counter, so if we pull the trigger fast enough we don't need to spin up as fast
+
+        //do something like figure out the spin-down rate based on the current power setting and start reducing the start flywheel time by
+        //some ratio between the time it takes to spin down from the current power level and the spinupTime
+    }*/
+
     //if the advance button was triggered in the last 450ms for less than 350ms, advance one chamber
     int currentTime = millis();
-    if(advanceButton == 0 && advanceButtonOffTime - advanceButtonOnTime < 350 && advanceButtonOffTime - currentTime < 400ms) {
-        advanceOneChamber()
+    if(advanceButton && advanceButtonOffTime - advanceButtonOnTime < 350 && currentTime - advanceButtonOffTime  < 400) {
+        advanceOneChamber();
 
         //let the loop have an opportunity to detect the next state as fast as possible
         return;
     }
 
-    //if the advance button was released in the last 400ms for greater than 350ms, advance to the next dart
-    if(advanceButton == 0 && advanceButtonOffTime - advanceButtonOnTime > 350 && advanceButtonOffTime - currentTime < 400ms) {
+    //if the advance button was released in the last 700ms for greater than 350ms, advance to the next dart
+    if(advanceButton && advanceButtonOffTime - advanceButtonOnTime > 350 && currentTime - advanceButtonOffTime < 2000) {
 
         if(dartInChamber) {
             return;
         } else {
-            advanceOneChamber()
+            advanceOneChamber();
             return;
         }
     }
+
+    //TODO do something with the advanceButtonOnTime and OffTime variables, they'll overflow if nothing happens in a long enough time.
 }
 
 bool Device::isReadyToFire() {
@@ -137,8 +158,25 @@ bool Device::isReadyToFire() {
     }
 }
 
+/**
+    integer between 0 and max servo pwm value (180 is the original FDL max esc value)
+    TODO when power levels is implemented make this dynamic. Middle of the range for now.
+*/
+int Device::getPowerLevel() {
+    return 90;
+}
+
+/**
+    the time it takes to spool up the flywheels depends on what the max rpm we're going to
+    stop accelerating at. I've used audacity to measure how long it takes at each power level
+*/
+int Device::getSpoolUpTime() {
+    //TODO when you've got power levels implemented make this dynamic based on power level
+    return 400;
+}
+
 void Device::advanceOneChamber() {
-    Cylinder.advanceOneChamber();
+    cylinder.advanceOneChamber();
 }
 
 bool Device::advanceToDart() {
@@ -149,7 +187,7 @@ bool Device::advanceToDart() {
 
 void Device::park() {
     plunger.park();
-    cylinder.park();
+    //cylinder.park();
 }
 
 /***********
@@ -169,10 +207,13 @@ used for the chamberPositionPin (D0) instead. The board wouldn't need to be modi
 void Device::maintainNonInterruptState()
 {
 
+    //I had my switch wired inverted, nbd
+    triggerButton = !digitalRead(triggerPin);
+
     //D0 can't use interrupts since it's already used by the Photon's built in mode switch
     //maintain advance button sate
-    previousAdvanceButton = advanceButton;
-    advanceButton = digitalRead(advanceButtonPin);
+    int previousAdvanceButton = advanceButton;
+    advanceButton = !digitalRead(advanceButtonPin);
     if(previousAdvanceButton != advanceButton && advanceButton == 1) {
         advanceButtonOnTime = millis();
     }
