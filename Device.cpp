@@ -5,7 +5,7 @@ Device::Device() {
 
   //initialize device state
   dartInChamber = false;
-  stepsPerRotation = 6400;
+  stepsPerRotation = 1600;
 
   advanceButton = 0;
   advanceButtonOffTime = 0;
@@ -21,6 +21,11 @@ void Device::setup() {
     flywheelESC.attach(escPin);  // attaches pin to servo object
     plunger.setup(plungerStepperStepPin,stepperDirPin,stepperEnablePin,plungerParkedPin,stepsPerRotation);
     cylinder.setup(cylinderStepperStepPin,stepperDirPin,stepperEnablePin,chamberPositionPin,stepsPerRotation);
+
+    advanceSwitch.setup(advanceButtonPin, HIGH, CLICKBTN_PULLUP);
+    advanceSwitch.debounceTime = 20;
+    advanceSwitch.multiclickTime = 250;
+    advanceSwitch.longClickTime = 1000;
     // Initialize pins
     // It's important you do this here, inside the setup() function rather than in the loop function.
 
@@ -44,7 +49,7 @@ void Device::setup() {
     pinMode(dartInChamberSensorPin, INPUT_PULLDOWN);
     pinMode(wifiEnablePin, INPUT_PULLDOWN);
     //pinMode(speedPotPin, INPUT);
-    pinMode(advanceButtonPin, INPUT_PULLDOWN);
+    //pinMode(advanceButtonPin, INPUT_PULLDOWN);
     pinMode(modeSwitch, INPUT_PULLDOWN);
 
     //attachInterrupt(triggerPin, debugPins, CHANGE );*/
@@ -77,6 +82,7 @@ void Device::pulse() {
     a cylinder advance to happen while a firing cycle is in progress anyway. Not only is this expected behavior, but
     it's preferred so that we don't have to maintain an event queue for things we don't care about. */
     maintainNonInterruptState();
+    advanceSwitch.Update();
 
     //firing where the device is in a fireable state takes priority over all else so it's at the top of the list
     /*if(triggerButton) {
@@ -120,26 +126,48 @@ void Device::pulse() {
     }*/
 
     //if the advance button was triggered in the last 450ms for less than 350ms, advance one chamber
-    int currentTime = millis();
-    if(advanceButton && advanceButtonOffTime - advanceButtonOnTime < 350 && currentTime - advanceButtonOffTime  < 400) {
-        advanceOneChamber();
+    // int currentTime = millis();
+    // if(advanceButton && advanceButtonOffTime - advanceButtonOnTime < 350 && currentTime - advanceButtonOffTime  < 400) {
+    //     Serial.println("Advance Button one cylinder");
+    //     advanceOneChamber();
+    //
+    //     //let the loop have an opportunity to detect the next state as fast as possible
+    //     return;
+    // }
 
-        //let the loop have an opportunity to detect the next state as fast as possible
+    //if the advance button was released in the last 700ms for greater than 350ms, advance to the next dart
+    // if(advanceButton && advanceButtonOffTime - advanceButtonOnTime > 350 && currentTime - advanceButtonOffTime < 2000) {
+    //
+    //     if(dartInChamber) {
+    //         return;
+    //     } else {
+    //         advanceOneChamber();
+    //         return;
+    //     }
+    // }
+
+    //TODO do something with the advanceButtonOnTime and OffTime variables, they'll overflow if nothing happens in a long enough time.
+
+    int advanceFunction = 0;
+
+    if(advanceSwitch.clicks != 0) {
+        Serial.printlnf("Clicks: %i", advanceSwitch.clicks);
+        advanceFunction = advanceSwitch.clicks;
+    }
+
+    if(advanceFunction == 1) {
+        Serial.println("Advance Button one cylinder");
+        advanceOneChamber();
         return;
     }
 
-    //if the advance button was released in the last 700ms for greater than 350ms, advance to the next dart
-    if(advanceButton && advanceButtonOffTime - advanceButtonOnTime > 350 && currentTime - advanceButtonOffTime < 2000) {
+    if(advanceFunction == -1) Serial.println("SINGLE LONG click");
 
-        if(dartInChamber) {
-            return;
-        } else {
-            advanceOneChamber();
-            return;
-        }
-    }
+    if(advanceFunction == -2) Serial.println("DOUBLE LONG click");
 
-    //TODO do something with the advanceButtonOnTime and OffTime variables, they'll overflow if nothing happens in a long enough time.
+    if(advanceFunction == -3) Serial.println("TRIPLE LONG click");
+
+    advanceFunction = 0;
 }
 
 bool Device::isReadyToFire() {
@@ -212,14 +240,14 @@ void Device::maintainNonInterruptState()
 
     //D0 can't use interrupts since it's already used by the Photon's built in mode switch
     //maintain advance button sate
-    int previousAdvanceButton = advanceButton;
-    advanceButton = !digitalRead(advanceButtonPin);
-    if(previousAdvanceButton != advanceButton && advanceButton == 1) {
-        advanceButtonOnTime = millis();
-    }
-    if(previousAdvanceButton != advanceButton && advanceButton == 0) {
-        advanceButtonOffTime = millis();
-    }
+    // int previousAdvanceButton = advanceButton;
+    // advanceButton = !digitalRead(advanceButtonPin);
+    // if(previousAdvanceButton != advanceButton && advanceButton == 1) {
+    //     advanceButtonOnTime = millis();
+    // }
+    // if(previousAdvanceButton != advanceButton && advanceButton == 0) {
+    //     advanceButtonOffTime = millis();
+    // }
     //end maintaining advance button state
 
     dartInChamber = digitalRead(dartInChamberSensorPin);

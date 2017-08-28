@@ -36,7 +36,7 @@ void StepperDriver::disable() {
     digitalWrite(enablePin, HIGH);
 }
 void StepperDriver::move(bool dir, int steps, int stepsPerSecond = 1000) {
-    unsigned long microSecondsPerStep = (1/(float)stepsPerSecond)*1000000;
+    unsigned long microSecondsPerStep = ((1/(float)stepsPerSecond)*1000000);
 
     setDirection(dir);
 

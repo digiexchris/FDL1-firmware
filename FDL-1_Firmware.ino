@@ -6,6 +6,7 @@ SYSTEM_MODE(MANUAL);
 #include "Device.h"
 
 bool firstRun = true;
+bool pendingDebug = false;
 
 Device device;
 
@@ -32,7 +33,7 @@ void loop() {
     }
 
     //update the LED that shows if there's a dart in the chamber, if the chamber is on the pin, and the plunger is parked
-    device.isReadyToFire();
+    //device.isReadyToFire();
 
     //doing actual things and not just doing pin setup, so we can't do this in a function called by the photon's setup() function
     if(firstRun) {

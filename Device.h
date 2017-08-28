@@ -5,6 +5,7 @@
 #include "pins.h"
 #include "Plunger.h"
 #include "Cylinder.h"
+#include "3rdparty/clickButton/clickButton.h"
 
 class Device
 {
@@ -13,6 +14,7 @@ private:
   Servo flywheelESC;  // create servo object to control a ESC
   Plunger plunger;
   Cylinder cylinder;
+  ClickButton advanceSwitch;
 
   //time since the flywheels started spinning up
   int spinupTime;
